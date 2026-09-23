@@ -1,0 +1,5 @@
+# Keys live in Vercel's Environment Variables, never in uploaded files.
+.env
+.env.*
+!.env.example
+dist
