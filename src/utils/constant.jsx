@@ -1,5 +1,4 @@
 
-export const LOGO = "https://i.pinimg.com/736x/38/2d/dd/382ddd585b1bf1307455f72bd19588be.jpg";
 export const USER_AVATAR = "https://images.unsplash.com/photo-1575936123452-b67c3203c357?fm=jpg&q=60&w=96&h=96&fit=crop"
 export const LOGIN_BG_URL = "https://assets.nflxext.com/ffe/siteui/vlv3/914ad279-199e-4095-9c10-2409dc9e5e1b/web/IN-en-20250519-TRIFECTA-perspective_8f1ca896-9e49-4a4e-90f0-22fc49650bd9_large.jpg"
 
@@ -19,6 +18,16 @@ export const MOVIE_LISTS = {
   indianMovies: "/discover/movie?with_origin_country=IN&sort_by=popularity.desc&language=en-US&page=1",
   hollywoodMovies: "/discover/movie?with_origin_country=US&sort_by=popularity.desc&language=en-US&page=1",
 };
+
+// Rows on the Browse page, in order (id = key in the movies store and page anchor).
+export const MOVIE_ROWS = [
+  { id: "nowPlayingMovies", title: "Now Playing" },
+  { id: "popularMovies", title: "Popular" },
+  { id: "topRatedMovies", title: "Best Movies" },
+  { id: "horrorMovies", title: "Horror" },
+  { id: "indianMovies", title: "Indian" },
+  { id: "hollywoodMovies", title: "Hollywood" },
+];
 
 export const SUPPORTED_LANGUAGES = [
   {identifier:"en",name:"English"},

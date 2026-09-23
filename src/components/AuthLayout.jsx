@@ -15,6 +15,20 @@ const AuthLayout = () => {
   const user = useSelector((store) => store.user);
   const { pathname } = useLocation();
   const [authChecked, setAuthChecked] = useState(false);
+  const theme = useSelector((store) => store.config.theme);
+
+  // Keep <html data-theme>, the browser UI color and the saved choice in sync.
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute("content", theme === "light" ? "#f7f2eb" : "#0b0908");
+    try {
+      localStorage.setItem("msg-theme", theme);
+    } catch {
+      // storage blocked (private mode): the theme still applies for this visit
+    }
+  }, [theme]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {

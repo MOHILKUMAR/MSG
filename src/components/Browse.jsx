@@ -1,4 +1,5 @@
 import Header from "./Header";
+import Footer from "./Footer";
 import MainContainer from "./MainContainer";
 import SecondaryContainer from "./SecondaryContainer";
 import useMovieList from "../hooks/useMovieList";
@@ -15,17 +16,17 @@ const Browse = () => {
   useMovieList("indianMovies");
   useMovieList("hollywoodMovies");
   return (
-    <div>
+    <div className="min-h-screen bg-canvas text-fg">
       <Header />
       {showGptSearch ? (
-       <GptSearch />
+        <GptSearch />
       ) : (
-        <>
-          {" "}
+        <main>
           <MainContainer />
           <SecondaryContainer />
-        </>
+        </main>
       )}
+      <Footer showExplore={!showGptSearch} />
       <MovieModal />
     </div>
   );

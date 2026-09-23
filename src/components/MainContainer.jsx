@@ -6,18 +6,18 @@ import VideoBackground from "./VideoBackground";
 const MainContainer = () => {
   const movies = useSelector((store) => store.movies?.nowPlayingMovies);
 
-  // this is called earlier return (also covers a failed or empty TMDB response)
-  if (!movies?.length) return null;
+  // Placeholder with the hero's shape while the first row loads (or if it failed).
+  if (!movies?.length) {
+    return <div className="skeleton aspect-video w-full opacity-40" />;
+  }
 
-  const mainMovie = movies[0];
-
-  const {original_title, overview, id} = mainMovie;
+  const { title, overview, id } = movies[0];
 
   return (
-    <div className="pt-[30%] bg-black md:pt-0">
-      <VideoTitle  title = {original_title} overview = {overview} movieId={id} />
+    <section className="relative pt-16 md:pt-0">
       <VideoBackground movieId={id} />
-    </div>
+      <VideoTitle title={title} overview={overview} movieId={id} />
+    </section>
   );
 };
 

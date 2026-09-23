@@ -1,21 +1,18 @@
 
 import MovieList from './MovieList'
 import {useSelector} from "react-redux"
+import { MOVIE_ROWS } from '../utils/constant'
 
 const SecondaryContainer = () => {
 
  const movies = useSelector((store)=> store.movies);
 
   return (
-    <div className="bg-black w-full">
-        <div className='mt-0  md:-mt-52 pl-4 md:pl-12 relative z-20'>
-        <MovieList title={"Now Playing"} movies={movies.nowPlayingMovies} />
-        <MovieList title={"Popular"} movies={movies.popularMovies} />
-        <MovieList title={"Best Movies"} movies={movies.topRatedMovies} />
-        <MovieList title={"Horror"} movies={movies.horrorMovies} />
-        <MovieList title={"Indian"} movies={movies.indianMovies} />
-        <MovieList title={"Hollywood"} movies={movies.hollywoodMovies} />
-        </div>
+    // Pulls the first rows up over the hero's faded bottom edge on larger screens.
+    <div className='relative z-20 pb-6 pt-6 md:-mt-28 md:pt-0 lg:-mt-40'>
+      {MOVIE_ROWS.map(({ id, title }) => (
+        <MovieList key={id} id={id} title={title} movies={movies[id]} />
+      ))}
     </div>
   )
 }

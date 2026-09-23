@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import Header from "./Header";
+import Footer from "./Footer";
 import { checkValidateData } from "../utils/validate";
 
 import {
@@ -12,7 +13,28 @@ import { auth } from "../utils/fireBase.jsx";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice.jsx";
 import { LOGIN_BG_URL, USER_AVATAR } from "../utils/constant.jsx";
+import { PlayIcon, SparkleIcon, GlobeIcon } from "./Icons";
 
+// Firebase error codes -> messages people can act on.
+const AUTH_ERRORS = {
+  "auth/invalid-credential": "Email or password is incorrect.",
+  "auth/wrong-password": "Email or password is incorrect.",
+  "auth/user-not-found": "Email or password is incorrect.",
+  "auth/email-already-in-use": "An account with this email already exists. Try signing in.",
+  "auth/too-many-requests": "Too many attempts. Please wait a moment and try again.",
+  "auth/network-request-failed": "Network problem. Check your connection and try again.",
+};
+const friendlyAuthError = (error) =>
+  AUTH_ERRORS[error.code] ?? "Something went wrong. Please try again.";
+
+const HIGHLIGHTS = [
+  { icon: <SparkleIcon className="h-4 w-4" />, text: "Ask AI for movies by mood, genre or moment" },
+  { icon: <PlayIcon className="h-4 w-4" />, text: "Watch any trailer in one click" },
+  { icon: <GlobeIcon className="h-4 w-4" />, text: "See where it streams in India" },
+];
+
+const inputClass =
+  "w-full rounded-xl bg-surface-2 px-4 py-3 text-fg ring-1 ring-line placeholder:text-muted/70 outline-none transition focus:ring-2 focus:ring-accent";
 
 const Login = () => {
 
@@ -24,6 +46,7 @@ const Login = () => {
   const password = useRef(null);
   const toggleSignInForm = () => {
     setIsSignInForm(!isSignInForm);
+    setErrorMessage(null);
   };
   const handleButtonClick = () => {
     // Read the inputs up front: once Firebase signs the user in, AuthLayout
@@ -53,7 +76,6 @@ const Login = () => {
           })
             .then(() => {
               // Profile updated!
-              // ...
               const { uid, email, displayName, photoURL } = auth.currentUser;
                 dispatch(
                         addUser({
@@ -63,93 +85,149 @@ const Login = () => {
                           photoURL: photoURL,
                         }),
                       )
-              
+
             })
-            .catch((error) => {
-              // An error occurred
-              // ...
-              setErrorMessage(error.message);
-            });
-         // console.log(user);
-          
-          // ...
+            .catch((error) => setErrorMessage(friendlyAuthError(error)));
         })
-        .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          setErrorMessage(errorCode + " - " + errorMessage);
-          // ..
-        });
+        .catch((error) => setErrorMessage(friendlyAuthError(error)));
     } else {
       //signIn logic;
       // Signed in -> AuthLayout picks it up and redirects to /browse.
       signInWithEmailAndPassword(auth, emailValue, passwordValue)
-        .catch((error) => {
-          const errorCode = error.code;
-          const errorMessage = error.message;
-          setErrorMessage(errorCode + " - " + errorMessage);
-        });
+        .catch((error) => setErrorMessage(friendlyAuthError(error)));
     }
   };
 
   return (
-    <div>
+    <div className="relative flex min-h-screen flex-col overflow-hidden bg-canvas text-fg">
       <Header />
-      <div className="absolute inset-0">
+
+      {/* Background: dimmed poster wall + ember glow */}
+      <div className="absolute inset-0" aria-hidden="true">
         <img
-        className="h-full w-full object-cover"
-          alt="backgroundImage"
+          className="h-full w-full object-cover opacity-35 saturate-50"
+          alt=""
           src={LOGIN_BG_URL}
         />
+        <div className="absolute inset-0 bg-linear-to-t from-canvas via-canvas/85 to-canvas/40" />
+        <div className="absolute inset-0 bg-linear-to-r from-canvas via-canvas/60 to-transparent" />
+        <div className="glow-bg absolute inset-0" />
       </div>
 
-      <form
-        onSubmit={(e) => e.preventDefault()}
-        className=" w-10/12  md:w-3/12 absolute p-6 md:p-12 bg-black opacity-80 text-white my-36 mx-auto right-0 left-0 rounded-lg "
-      >
-        <h1 className="text-xl font-bold md:text-3xl my-2 py-4 ">
-          {" "}
-          {isSignInForm ? "Sign In" : "Sign Up"}{" "}
-        </h1>
+      <main className="relative z-10 flex flex-1 items-center px-4 pb-12 pt-28 md:px-12">
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-12 md:grid-cols-2">
+          <section className="animate-fade-up hidden md:block">
+            <p className="mb-4 inline-flex items-center gap-2 rounded-full bg-surface/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-accent ring-1 ring-line">
+              <SparkleIcon className="h-3.5 w-3.5" /> AI movie night
+            </p>
+            <h1 className="font-display text-6xl leading-[0.95] tracking-wide lg:text-7xl">
+              Your next favorite movie is{" "}
+              <span className="bg-linear-to-r from-accent to-accent-2 bg-clip-text text-transparent">
+                one question away.
+              </span>
+            </h1>
+            <p className="mt-5 max-w-md text-lg text-muted">
+              Ask in English, Hindi or Spanish, play the trailer, then see
+              exactly where to stream it.
+            </p>
+            <ul className="mt-8 space-y-3">
+              {HIGHLIGHTS.map(({ icon, text }) => (
+                <li key={text} className="flex items-center gap-3 text-fg/90">
+                  <span className="grid h-9 w-9 place-items-center rounded-xl bg-surface-2 text-accent ring-1 ring-line">
+                    {icon}
+                  </span>
+                  {text}
+                </li>
+              ))}
+            </ul>
+          </section>
 
-        {!isSignInForm && (
-          <input
-            ref={name}
-            type="text"
-            placeholder="Full Name"
-            className="p-4 my-3 w-full  bg-gray-700 rounded-lg"
-          />
-        )}
+          <form
+            onSubmit={(e) => e.preventDefault()}
+            className="animate-fade-up mx-auto w-full max-w-md rounded-3xl bg-surface/80 p-6 shadow-2xl shadow-black/40 ring-1 ring-line backdrop-blur-xl md:p-10"
+          >
+            <h2 className="font-display text-4xl tracking-wide">
+              {isSignInForm ? "Welcome back" : "Create your account"}
+            </h2>
+            <p className="mb-6 mt-1 text-sm text-muted">
+              {isSignInForm
+                ? "Sign in to pick up where you left off."
+                : "It takes less than a minute."}
+            </p>
 
-        <input
-          ref={email}
-          type="text"
-          placeholder="EmailAddress"
-          className="p-4 my-3 w-full  bg-gray-700 rounded-lg"
-        />
+            <div className="space-y-4">
+              {!isSignInForm && (
+                <label className="block">
+                  <span className="mb-1.5 block text-sm font-medium text-fg/90">Full name</span>
+                  <input
+                    ref={name}
+                    type="text"
+                    autoComplete="name"
+                    placeholder="Your name"
+                    className={inputClass}
+                  />
+                </label>
+              )}
 
-        <input
-          ref={password}
-          type="password"
-          placeholder="Password"
-          className="p-4 my-3  w-full bg-gray-700 rounded-lg"
-        />
-        <p className="text-red-700 font-bold text-lg p-1"> {errorMessage}</p>
-        <button
-          className="p-4 my-3  bg-red-700  w-full rounded-lg"
-          onClick={handleButtonClick}
-        >
-          {isSignInForm ? "Sign In" : "Sign Up"}
-        </button>
-        <p
-          className="my-6 cursor-pointer text-blue-600"
-          onClick={toggleSignInForm}
-        >
-          {isSignInForm
-            ? "New to Netflix? Sign Up Now "
-            : "Already registered? Sign In Now"}
-        </p>
-      </form>
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-fg/90">Email address</span>
+                <input
+                  ref={email}
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  className={inputClass}
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-1.5 block text-sm font-medium text-fg/90">Password</span>
+                <input
+                  ref={password}
+                  type="password"
+                  autoComplete={isSignInForm ? "current-password" : "new-password"}
+                  placeholder="••••••••"
+                  className={inputClass}
+                />
+                {!isSignInForm && (
+                  <span className="mt-1.5 block text-xs text-muted">
+                    8+ characters with upper and lower case letters and a number.
+                  </span>
+                )}
+              </label>
+            </div>
+
+            {errorMessage && (
+              <p
+                role="alert"
+                className="mt-4 rounded-xl bg-danger/10 px-4 py-3 text-sm font-medium text-danger ring-1 ring-danger/30"
+              >
+                {errorMessage}
+              </p>
+            )}
+
+            <button
+              className="mt-6 w-full cursor-pointer rounded-xl bg-linear-to-r from-accent to-accent-2 py-3.5 font-bold text-accent-fg shadow-[0_10px_30px_-10px_var(--accent)] transition hover:brightness-110 active:scale-[0.99]"
+              onClick={handleButtonClick}
+            >
+              {isSignInForm ? "Sign In" : "Create Account"}
+            </button>
+
+            <p className="mt-6 text-center text-sm text-muted">
+              {isSignInForm ? "New to MSG? " : "Already have an account? "}
+              <button
+                type="button"
+                className="cursor-pointer font-semibold text-accent underline-offset-4 hover:underline"
+                onClick={toggleSignInForm}
+              >
+                {isSignInForm ? "Create an account" : "Sign in"}
+              </button>
+            </p>
+          </form>
+        </div>
+      </main>
+
+      <Footer />
     </div>
   );
 };
