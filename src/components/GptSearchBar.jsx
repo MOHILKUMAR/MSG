@@ -1,24 +1,17 @@
 import { useDispatch, useSelector } from "react-redux";
 import lang from "../utils/languageConstant";
 import { useRef, useState } from "react";
-import { GPT_API_URL } from "../utils/constant";
-import { auth } from "../utils/fireBase";
+import { callApi } from "../utils/api";
 import { fetchTmdb } from "../utils/tmdb";
 import { addGptMoiveResult } from "../utils/gptSlice";
 
 // Asks our server (api/gpt.js) for movie names; the Gemini key stays there.
 const getGptMovies = async (query) => {
-  const idToken = await auth.currentUser.getIdToken();
-  const res = await fetch(GPT_API_URL, {
+  const { movies } = await callApi("/api/gpt", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: "Bearer " + idToken,
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query }),
   });
-  if (!res.ok) throw new Error("GPT search failed (" + res.status + ")");
-  const { movies } = await res.json();
   return movies;
 };
 

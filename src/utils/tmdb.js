@@ -1,10 +1,5 @@
-import { API_OPTIONS } from "./constant";
+import { callApi } from "./api";
 
-const TMDB_BASE_URL = "https://api.themoviedb.org/3";
-
-// Throws on non-2xx so callers never store an error body as movie data.
-export const fetchTmdb = async (path) => {
-  const res = await fetch(TMDB_BASE_URL + path, API_OPTIONS);
-  if (!res.ok) throw new Error(`TMDB request failed (${res.status}): ${path}`);
-  return res.json();
-};
+// TMDB requests go through our server (api/tmdb.js) so the token stays private.
+export const fetchTmdb = (path) =>
+  callApi("/api/tmdb?path=" + encodeURIComponent(path));

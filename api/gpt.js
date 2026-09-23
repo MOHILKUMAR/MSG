@@ -1,40 +1,13 @@
 // Vercel serverless function: POST /api/gpt  { query } -> { movies: string[] }
 // Keeps the Gemini key on the server and only answers signed-in Firebase users.
 import { GoogleGenAI, Type } from "@google/genai";
-import { createRemoteJWKSet, jwtVerify } from "jose";
+import { setCors, verifyFirebaseUser } from "./_lib/auth.js";
 
-const FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || "netflixgpt1-40ee2";
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
 const MAX_QUERY_LENGTH = 200;
 
-const firebaseKeys = createRemoteJWKSet(
-  new URL(
-    "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
-  )
-);
-
-const verifyFirebaseUser = async (authHeader = "") => {
-  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, firebaseKeys, {
-      issuer: `https://securetoken.google.com/${FIREBASE_PROJECT_ID}`,
-      audience: FIREBASE_PROJECT_ID,
-      algorithms: ["RS256"],
-    });
-    return payload.sub ? payload : null;
-  } catch {
-    return null;
-  }
-};
-
 export default async function handler(req, res) {
-  // Only needed if the site is hosted somewhere else (e.g. Firebase Hosting).
-  if (process.env.ALLOWED_ORIGIN) {
-    res.setHeader("Access-Control-Allow-Origin", process.env.ALLOWED_ORIGIN);
-    res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
-    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  }
+  setCors(res, "POST");
   if (req.method === "OPTIONS") return res.status(204).end();
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
