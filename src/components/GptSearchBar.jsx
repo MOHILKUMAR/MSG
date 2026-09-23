@@ -1,54 +1,59 @@
 import { useDispatch, useSelector } from "react-redux";
 import lang from "../utils/languageConstant";
-import { useRef } from "react";
-import { GoogleGenAI } from "@google/genai";
-import { API_OPTIONS, GEMINI_KEY } from "../utils/constant";
+import { useRef, useState } from "react";
+import { GPT_API_URL } from "../utils/constant";
+import { auth } from "../utils/fireBase";
+import { fetchTmdb } from "../utils/tmdb";
 import { addGptMoiveResult } from "../utils/gptSlice";
+
+// Asks our server (api/gpt.js) for movie names; the Gemini key stays there.
+const getGptMovies = async (query) => {
+  const idToken = await auth.currentUser.getIdToken();
+  const res = await fetch(GPT_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + idToken,
+    },
+    body: JSON.stringify({ query }),
+  });
+  if (!res.ok) throw new Error("GPT search failed (" + res.status + ")");
+  const { movies } = await res.json();
+  return movies;
+};
+
+const searchMovieTMDB = (movie) =>
+  fetchTmdb(
+    "/search/movie?query=" +
+      encodeURIComponent(movie) +
+      "&include_adult=false&language=en-US&page=1"
+  );
 
 const GptSearchBar = () => {
   const searchText = useRef(null);
   const langKey = useSelector((store) => store.config.lang);
   const dispatch = useDispatch();
-  const ai = new GoogleGenAI({ apiKey: GEMINI_KEY });
-
-  const searchMovieTMDB = async (movie) => {
-    const data = await fetch(
-      "https://api.themoviedb.org/3/search/movie?query=" +
-        movie +
-        "&include_adult=false&language=en-US&page=1",
-      API_OPTIONS
-    );
-
-    const json = data.json();
-
-    return json;
-  };
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const handleGptSearchClick = async () => {
-    // console.log(searchText.current.value);
+    const query = searchText.current.value.trim();
+    if (!query || isLoading) return;
 
-    //make and api call to gpt api and get movies results
-    const Query =
-      "Act as a Movie Recommendations system and suggest some movies for the query" +
-      searchText.current.value +
-      "only give me the names of 5 movies, comma seperated like the example results given ahead. Example Result:Gadar, Sholay, Don, ghost 3Idoit";
+    setIsLoading(true);
+    setErrorMessage(null);
+    try {
+      const gptMovies = await getGptMovies(query);
+      if (!gptMovies?.length) throw new Error("No movie suggestions returned");
 
-    // gemini API Calls
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: Query,
-    });
-
-    // Store data into the array.
-    const geminiMovie = response.text.split(", ");
-
-    const promiseArray = geminiMovie.map((movie) => searchMovieTMDB(movie));
-
-    const tmdbResults = await Promise.all(promiseArray);
-    
-    // console.log(tmdbResults);
-    dispatch(addGptMoiveResult({movieName: geminiMovie, movieResults:tmdbResults}));
-    // console.log(promiseArray);
+      const tmdbResults = await Promise.all(gptMovies.map(searchMovieTMDB));
+      dispatch(addGptMoiveResult({ movieName: gptMovies, movieResults: tmdbResults }));
+    } catch (error) {
+      console.error(error);
+      setErrorMessage(lang[langKey].gptSearchError);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -65,10 +70,14 @@ const GptSearchBar = () => {
         />
         <button
           onClick={handleGptSearchClick}
-          className="col-span-3 py-2 m-2 px-4 bg-red-700 text-white rounded-lg"
+          disabled={isLoading}
+          className="col-span-3 py-2 m-2 px-4 bg-red-700 text-white rounded-lg disabled:opacity-50"
         >
-          {lang[langKey].search}
+          {isLoading ? lang[langKey].searching : lang[langKey].search}
         </button>
+        {errorMessage && (
+          <p className="col-span-12 mx-2 font-bold text-red-500">{errorMessage}</p>
+        )}
       </form>
     </div>
   );

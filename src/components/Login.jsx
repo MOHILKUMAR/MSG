@@ -26,15 +26,13 @@ const Login = () => {
     setIsSignInForm(!isSignInForm);
   };
   const handleButtonClick = () => {
-    //validated the form data
-    // console.log(email.current.value);
-    // console.log(password.current.value);
+    // Read the inputs up front: once Firebase signs the user in, AuthLayout
+    // redirects away and this page's refs are gone before the promises resolve.
+    const emailValue = email.current.value.trim();
+    const passwordValue = password.current.value;
 
-    const message = checkValidateData(
-      email.current.value,
-      password.current.value
-    );
-    // console.log(message);
+    //validated the form data
+    const message = checkValidateData(emailValue, passwordValue);
     setErrorMessage(message);
 
     if (message) return;
@@ -43,17 +41,14 @@ const Login = () => {
 
     if (!isSignInForm) {
       //sign up logic.
-      createUserWithEmailAndPassword(
-        auth,
-        email.current.value,
-        password.current.value
-      )
+      const fullName = name.current.value.trim();
+      createUserWithEmailAndPassword(auth, emailValue, passwordValue)
         .then((userCredential) => {
           // Signed up
           const user = userCredential.user;
 
           updateProfile(user, {
-            displayName: name.current.value,
+            displayName: fullName,
             photoURL:USER_AVATAR ,
           })
             .then(() => {
@@ -87,18 +82,8 @@ const Login = () => {
         });
     } else {
       //signIn logic;
-      signInWithEmailAndPassword(
-        auth,
-        email.current.value,
-        password.current.value
-      )
-        .then((userCredential) => {
-          // Signed in
-          const user = userCredential.user;
-         // console.log(user);
-          
-          // ...
-        })
+      // Signed in -> AuthLayout picks it up and redirects to /browse.
+      signInWithEmailAndPassword(auth, emailValue, passwordValue)
         .catch((error) => {
           const errorCode = error.code;
           const errorMessage = error.message;
@@ -110,9 +95,9 @@ const Login = () => {
   return (
     <div>
       <Header />
-      <div className="absolute">
+      <div className="absolute inset-0">
         <img
-        className="h-screen object-cover md:w-screen"
+        className="h-full w-full object-cover"
           alt="backgroundImage"
           src={LOGIN_BG_URL}
         />

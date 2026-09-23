@@ -1,17 +1,15 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { useSearchParams } from "react-router";
 import VideoTitle from "./VideoTitle";
 import VideoBackground from "./VideoBackground";
 
 const MainContainer = () => {
   const movies = useSelector((store) => store.movies?.nowPlayingMovies);
 
-  // this is called earlier return
-  if (movies === null) return;
+  // this is called earlier return (also covers a failed or empty TMDB response)
+  if (!movies?.length) return null;
 
   const mainMovie = movies[0];
-//   console.log(mainMovie);
 
   const {original_title, overview, id} = mainMovie;
 
