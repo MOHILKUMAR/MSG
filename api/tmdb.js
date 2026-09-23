@@ -4,7 +4,7 @@ import { setCors, verifyFirebaseUser } from "./_lib/auth.js";
 
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 export const ALLOWED_PATH =
-  /^\/(movie\/(now_playing|popular|top_rated|\d+\/videos)|discover\/movie|search\/movie)(\?[^#]*)?$/;
+  /^\/(movie\/(now_playing|popular|top_rated|\d+(\/videos)?)|discover\/movie|search\/movie)(\?[^#]*)?$/;
 
 export default async function handler(req, res) {
   setCors(res, "GET");

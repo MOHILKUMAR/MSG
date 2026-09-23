@@ -1,16 +1,22 @@
 import React from "react";
+import { useDispatch } from "react-redux";
 import { IMG_CDN_URL } from "../utils/constant";
+import { showMovieModal } from "../utils/moviesSlice";
 
-const MovieCard = ({ posterPath }) => {
-  
+const MovieCard = ({ movieId, posterPath, title }) => {
+  const dispatch = useDispatch();
+
   if(!posterPath) return null;
-   
+
   return (
-    <div className="w-36 md:w-48 pr-4">
-      
-        <img src={IMG_CDN_URL + posterPath} alt="Movie card" />
-      
-    </div>
+    <button
+      className="w-36 md:w-48 pr-4 cursor-pointer hover:scale-105 transition-transform"
+      onClick={() => dispatch(showMovieModal({ movieId, mode: "info" }))}
+    >
+
+        <img src={IMG_CDN_URL + posterPath} alt={title} />
+
+    </button>
   );
 };
 

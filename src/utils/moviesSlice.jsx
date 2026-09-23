@@ -11,6 +11,7 @@ const moviesSlice = createSlice({
         indianMovies: null,
         hollywoodMovies: null,
         trailerVideo: null,
+        movieModal: null, // { movieId, mode: "info" | "trailer" }
     },
     reducers: {
         addMovieList: (state, action) => {
@@ -20,8 +21,14 @@ const moviesSlice = createSlice({
         addTrailerVideo: (state, action) => {
             state.trailerVideo = action.payload;
         },
+        showMovieModal: (state, action) => {
+            state.movieModal = action.payload;
+        },
+        closeMovieModal: (state) => {
+            state.movieModal = null;
+        },
     }
 })
 
-export const { addMovieList, addTrailerVideo } = moviesSlice.actions;
+export const { addMovieList, addTrailerVideo, showMovieModal, closeMovieModal } = moviesSlice.actions;
 export default moviesSlice.reducer;

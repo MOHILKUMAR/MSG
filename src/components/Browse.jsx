@@ -3,6 +3,7 @@ import MainContainer from "./MainContainer";
 import SecondaryContainer from "./SecondaryContainer";
 import useMovieList from "../hooks/useMovieList";
 import GptSearch from "./GptSearch";
+import MovieModal from "./MovieModal";
 import { useSelector } from "react-redux";
 
 const Browse = () => {
@@ -25,6 +26,7 @@ const Browse = () => {
           <SecondaryContainer />
         </>
       )}
+      <MovieModal />
     </div>
   );
 };

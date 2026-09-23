@@ -5,6 +5,7 @@ import { Navigate, Outlet, useLocation } from "react-router";
 import { auth } from "../utils/fireBase";
 import { addUser, removeUser } from "../utils/userSlice";
 import { clearGptState } from "../utils/gptSlice";
+import { closeMovieModal } from "../utils/moviesSlice";
 
 // Wraps every route: keeps the store in sync with Firebase auth (one listener
 // for the whole app) and redirects between "/" and "/browse" without adding
@@ -25,6 +26,7 @@ const AuthLayout = () => {
         // User is signed out
         dispatch(removeUser());
         dispatch(clearGptState());
+        dispatch(closeMovieModal());
       }
       setAuthChecked(true);
     });
